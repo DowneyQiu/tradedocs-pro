@@ -507,7 +507,7 @@
       '<option value="byPiece"' + (opt.packingMode === 'byPiece' ? ' selected' : '') + '>逐件明细模式</option></select></label>' +
       '</section>' +
       '<section class="panel soft"><div class="panelhead"><h2>④ 唛头 / Shipping Mark</h2></div>' +
-      '<label>主唛（每行一条）<textarea id="stMainMark" rows="4" placeholder="NORDHAUS / HAMBURG&#10;P/O No.: NH-PO-77310&#10;C/NO. 1-UP">' + E(current.shippingMark || '') + '</textarea></label>' +
+      '<label>主唛（每行一条）<textarea id="stMainMark" rows="4" placeholder="BUYER NAME / DESTINATION&#10;P/O No.: PO-2026-001&#10;C/NO. 1-UP">' + E(current.shippingMark || '') + '</textarea></label>' +
       '<label>侧唛 / 附加信息<input id="stSideMark" value="' + E(current.sideMark || '') + '" placeholder="G.W. / N.W. / MEAS. / MADE IN CHINA"></label>' +
       '<label class="check"><input type="checkbox" id="stMarkNone"' + yes(TD.shippingMark(current).isNM) + '> N/M（无唛头）</label>' +
       '<p class="sub">唛头会显示在装箱单 SHIPPING MARK 列，并可单独打印「箱唛页」贴箱。</p></section>' +
