@@ -84,7 +84,7 @@
 
 ```bash
 # 需要 Python 3.8+，只用标准库，不需要 pip install
-git clone <你的仓库地址>
+git clone https://github.com/DowneyQiu/tradedocs-pro.git
 cd TradeDocsPro
 python server.py
 ```
