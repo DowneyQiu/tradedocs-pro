@@ -6,6 +6,9 @@
 
 平台：Windows / Python 3.8+　|　网络：纯本机离线　|　许可：源码可见 · 免费自用
 
+> **English user guide**：[docs/USER_GUIDE_EN.md](docs/USER_GUIDE_EN.md)
+> （English licence summary：[LICENSE-EN.md](LICENSE-EN.md)）
+
 ---
 
 ## ⚠️ 先说清楚：这不是「开源软件」
