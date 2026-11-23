@@ -1,0 +1,57 @@
+{
+  "_comment": "TradeDocs Pro 开源分享版出厂空白配置模板。仅在数据库 entities / accounts 集合为空时用于首次播种；之后一律以本机 SQLite 为准。请把占位内容改成贵公司的真实资料，正式出单前逐项核对。此文件不上传、不联网、不自动改写任何账号或银行信息；出厂不含任何真实公司、客户、账户或订单资料。",
+  "schemaVersion": "2",
+  "entities": [
+    {
+      "id": "main",
+      "code": "MAIN",
+      "legalNameEn": "YOUR COMPANY NAME LTD",
+      "legalNameCn": "贵公司中文名称",
+      "brandDisplay": "YOUR BRAND",
+      "brandDisplayCn": "贵公司品牌",
+      "addressEn": "Your street address, City, Country",
+      "addressCn": "贵公司中文地址",
+      "contact": "",
+      "contactTitle": "",
+      "email": "",
+      "phone": "",
+      "whatsapp": "",
+      "website": "",
+      "logo": "",
+      "logoNote": "尚未配置 Logo：单证页眉显示 YOUR LOGO 占位框。请在【公司与系统设置】→「品牌 Logo」上传，或在本档案填写图片文件名。",
+      "creditCode": "",
+      "creditCodeNote": "",
+      "taxNo": "",
+      "status": "active",
+      "verified": false,
+      "source": "",
+      "role": "contract",
+      "notes": [
+        "这是出厂空白模板。请在正式出单前把本主体资料改成贵公司真实信息并核对无误。"
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "id": "main-usd",
+      "entityId": "main",
+      "entity": "YOUR COMPANY NAME LTD",
+      "entity_cn": "贵公司中文名称",
+      "currency": "USD",
+      "beneficiary": "YOUR COMPANY NAME LTD",
+      "account_no": "",
+      "bank": "",
+      "bank_cn": "",
+      "bank_address": "",
+      "swift": "",
+      "beneficiary_address": "",
+      "status": "unverified",
+      "disclosure": "order_confirmed_only",
+      "version": "",
+      "applicable": "请按贵公司实际收款账户填写；可在【收款账户】中新增多个币种账户。",
+      "note": "出厂空白模板：账号、银行、SWIFT 均未填写，对外发送 PI 前必须补齐并人工核对。",
+      "verified": false,
+      "source": ""
+    }
+  ]
+}

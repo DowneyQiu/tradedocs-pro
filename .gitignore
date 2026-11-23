@@ -1,0 +1,29 @@
+# 运行时状态（不进仓库）
+runtime.json
+*.sqlite3-wal
+*.sqlite3-shm
+__pycache__/
+*.pyc
+*.pyo
+
+# 随包第三方运行时：只在 Release 免安装 ZIP 里分发，不进源码仓库
+runtime/
+
+# 本机业务数据与自动快照（出厂空库会提交，实际使用的快照不提交）
+backups/*.sqlite3
+backups/*.sqlite3-journal
+product-images/*
+!product-images/.gitkeep
+
+# 本地编辑痕迹
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 宣传物料与本地说明（不进仓库）
+宣传物料/
+00_从这里开始.md
+GitHub发布说明.md

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TradeDocs Pro · 外贸单证工作台</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<aside>
+  <div class="brand"><img id="brandLogoImg" src="app-logo-wide.png" alt="TradeDocs Pro"></div>
+  <div class="caption">WORKSPACE</div>
+  <div class="nav active" data-view="dashboard">▦　工作台</div>
+  <div class="nav" data-view="orders">▤　订单与单证</div>
+  <div class="nav" data-view="studio">▣　单证中心 / 预览导出</div>
+  <div class="nav" data-view="customers">◎　客户管理</div>
+  <div class="nav" data-view="products">◇　产品管理</div>
+  <div class="nav" data-view="packing">▧　装箱管理</div>
+  <div class="nav" data-view="accounts">▣　收款账户</div>
+  <div class="nav" data-view="entities">▣　出单主体</div>
+  <div class="caption">TOOLS</div>
+  <div class="nav" data-view="rates">⇄　汇率管理</div>
+  <div class="nav" data-view="profit">▥　利润分析</div>
+  <div class="nav" data-view="history">◷　历史记录</div>
+  <div class="caption">PREFERENCES</div>
+  <div class="nav" data-view="settings">⚙　公司与系统设置</div>
+  <div class="nav" data-view="about">ⓘ　帮助与支持</div>
+  <div class="sidefoot">TradeDocs Pro <span id="sideVersion">v3.0.0</span> · 开源分享版 v1.0<br>本机离线 · 不联网 · 不上传<br>分享者 唐先生（Downey）· 拓珀新材料 Topo New Material<br>源码公开 · 免费自用 · 禁止商业化分发</div>
+</aside>
+
+<main>
+  <header class="top">
+    <div>
+      <h1 id="pageTitle">工作台</h1>
+      <div class="sub" id="pageSubtitle">订单、客户与单证概览 · 离线单机版 · SQLite 本地存储</div>
+    </div>
+    <div class="topright"><span class="pill" id="storagePill">● 正在连接本机数据库…</span></div>
+  </header>
+
+  <div id="globalNotice" class="notice" hidden></div>
+
+  <section id="firstRunGuide" class="panel first-run" hidden>
+    <div class="panelhead"><h2>欢迎使用 TradeDocs Pro</h2>
+      <span class="sub">三步完成首次配置，或先看看演示数据</span></div>
+    <div class="firstrun-grid">
+      <div class="firstrun-step"><b>① 出单主体</b><p>录入贵公司英文法定名称、地址与联系方式；这是所有单证的抬头。</p></div>
+      <div class="firstrun-step"><b>② 收款账户</b><p>填写账号、开户行与 SWIFT，核对后标记「已核定」。</p></div>
+      <div class="firstrun-step"><b>③ 开始开单</b><p>客户 → 产品 → 新建订单 → 单证中心逐份导出 PDF。</p></div>
+    </div>
+    <div class="actions" style="flex-wrap:wrap;gap:8px;margin-top:12px">
+      <button class="btn primary" onclick="TD.setActiveNav('entities')">去填写出单主体</button>
+      <button class="btn" onclick="TD.loadDemoData()">载入演示数据（虚构示例）</button>
+      <button class="btn" onclick="TD.setActiveNav('about')">查看帮助与支持</button>
+    </div>
+    <p class="sub" style="margin-top:10px">演示数据全部标注 DEMO / Example，仅用于熟悉界面，可随时一键清除；不会改动主体与账户资料。</p>
+  </section>
+  <section id="dashboard">
+    <div class="kpihead">
+      <div>
+        <h2>经营概览</h2>
+        <p class="sub">统计范围仅为本系统内订单；金额按结算币种分列，不跨币种相加；未录入内部成本的订单不计入毛利。</p>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="TD.setActiveNav('profit')">利润分析 / 录入成本</button>
+        <button class="btn primary" onclick="TD.openModal()">＋ 新建订单 / 报价</button>
+      </div>
+    </div>
+    <section class="grid kpigrid">
+      <div class="card"><div class="metric">本月报价</div><div class="value" id="quotes">—</div><div class="sub">份报价单</div></div>
+      <div class="card"><div class="metric">已成交订单</div><div class="value" id="wonCount">—</div><div class="sub" id="quotesNote">报价阶段 0 笔</div></div>
+      <div class="card"><div class="metric">已成交金额</div><div class="value multivalue" id="wonAmount">—</div><div class="sub" id="wonAmountNote">按结算币种分列</div></div>
+      <div class="card"><div class="metric">毛利合计</div><div class="value multivalue" id="profitValue">—</div><div class="sub" id="profitNote">需先录入内部成本</div></div>
+    </section>
+    <div id="insightGrid" class="insightgrid"></div>
+    <div class="columns">
+      <section class="panel">
+        <div class="panelhead"><h2>最近订单</h2><div class="actions">
+          <button class="btn" onclick="TD.exportOrderCsv()">导出订单明细</button>
+          <button class="btn" onclick="TD.exportData()">导出完整备份</button>
+        </div></div>
+        <input id="orderSearch" placeholder="搜索订单号、客户、PO号或产品型号" oninput="TD.refresh()">
+        <div class="tablewrap"><table class="table"><thead><tr>
+          <th>编号</th><th>客户</th><th>日期</th><th>金额</th><th>状态</th><th>操作</th>
+        </tr></thead><tbody id="rows"></tbody></table></div>
+        <div id="empty" class="sub center">还没有订单，创建第一笔报价开始使用。</div>
+      </section>
+      <section class="panel">
+        <div class="panelhead"><h2>快速操作</h2></div>
+        <div class="quick">
+          <button class="btn primary" onclick="TD.openModal()">＋ 新建订单 / 报价</button>
+          <button class="btn" onclick="TD.manage('customers')">＋ 新增客户</button>
+          <button class="btn" onclick="TD.manage('products')">＋ 新增产品</button>
+          <button class="btn" onclick="document.getElementById('backupFile').click()">⇧ 恢复 JSON 备份</button>
+          <button class="btn" onclick="TD.restoreSnapshot()">↶ 恢复 SQLite 快照</button>
+          <button class="btn" onclick="TD.exportSqlite()">⇩ 导出数据库快照</button>
+        </div>
+        <input id="backupFile" type="file" accept="application/json,.json" hidden onchange="TD.restoreData(event)">
+        <p class="sub" style="margin-top:18px">业务数据保存在本机 <code>tradedocs.sqlite3</code>。银行与客户资料请只保存在自己的设备或受控备份位置，不要上传公共网盘或代码仓库。</p>
+        <div id="dashboardChecks" class="checklist"></div>
+      </section>
+    </div>
+    <details class="flowcard advanced">
+      <summary>开单流程（5 步，按顺序走就不会乱）与导出提示</summary>
+      <div class="flowsteps">
+        <span>① 客户与报价</span><span>② 产品与金额</span><span>③ 条款与收款</span>
+        <span>④ 装箱与唛头（可跳过）</span><span>⑤ 单证与出单</span>
+      </div>
+      <div>日常只需要 <b>「＋ 新建订单 / 报价」→ 保存 → 单证中心导出 PDF</b>。客户档案、产品库、装箱明细都是可选的提效步骤，用到时再填；订单弹窗右上角可切换「单页显示全部」。</div>
+      <div>导出前请核对金额、收款账户与装箱数据；打印对话框只需勾选「背景图形」，页眉和页脚（about:blank / 日期 / 页码）已由系统自动抑制。</div>
+    </details>
+  </section>
+
+  <section id="view" class="panel" hidden></section>
+</main>
+
+<!-- ===================== 订单编辑弹窗 ===================== -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <div class="panelhead"><h2 id="orderModalTitle">新建订单 / 报价</h2><button class="btn" onclick="TD.closeModal()">✕</button></div>
+    <div id="orderCompliance" class="notice" hidden></div>
+
+    <div class="stepbar" id="formSteps">
+      <button class="step" type="button" data-step="1">① 客户与报价</button>
+      <button class="step" type="button" data-step="2">② 产品与金额</button>
+      <button class="step" type="button" data-step="3">③ 交易条款与收款</button>
+      <button class="step" type="button" data-step="4">④ 装箱与唛头 <small>可跳过</small></button>
+      <button class="step" type="button" data-step="5">⑤ 单证与出单</button>
+      <label class="stepswitch"><input type="checkbox" id="formSingle"> 单页显示全部</label>
+    </div>
+    <div class="stepguide" id="stepGuide"></div>
+    <div class="form" id="orderForm">
+
+      <div class="formstep" data-step="1">
+        <h3 class="section-title">① 客户与报价 — 先确定「卖给谁」</h3>
+        <label>订单 / 报价编号<input id="no" placeholder="例如 QT-2026-001"></label>
+        <label>报价日期<input id="date" type="date"></label>
+        <label>客户采购单号 PO<input id="po" placeholder="例如 PO-2026-001"></label>
+        <p class="full sub">两个编号不要填反：<b>订单编号</b>是每单唯一的项目号（客户 PO 抬头、唛头、文件名都用它）；<b>客户采购单号</b>是客户给的 P/O，可能一个 P/O 对应多张订单、多单复用，不必唯一。客户没有给 P/O 就留空。</p>
+        <label>客户公司<input id="buyer" list="buyerlist" placeholder="选择或输入客户公司"><datalist id="buyerlist"></datalist></label>
+        <label>国家 / 地区<input id="country" placeholder="Country"></label>
+        <label>城市<input id="city" placeholder="City"></label>
+        <label class="full">客户账单地址 Bill To<textarea id="buyerAddress" rows="2" placeholder="Bill-to address"></textarea></label>
+        <label class="full">收货地址 Ship To<textarea id="shipTo" rows="2" placeholder="留空则与账单地址相同"></textarea></label>
+        <label>联系人<input id="contact" placeholder="Contact person"></label>
+        <label>联系人邮箱<input id="email" type="email" placeholder="buyer@example.com"></label>
+        <label>买方电话<input id="buyerPhone" placeholder="Tel"></label>
+        <label>买方税号 / VAT / EORI<input id="buyerTaxId" placeholder="Tax ID（有才填）"></label>
+        <p class="full sub">从客户档案选择公司名会自动带入地址、联系方式与该客户的专属价。此步只填客户与编号，金额下一步填。</p>
+      </div>
+
+      <div class="formstep" data-step="2" hidden>
+        <h3 class="section-title">② 产品与金额 — 再确定「卖什么、多少钱」</h3>
+        <label>结算币种<select id="currency"></select></label>
+        <label>参考币种（仅展示，选填）<select id="refCurrency"></select></label>
+        <label>参考汇率<input id="fxRate" type="number" step="0.000001" min="0" placeholder="1 结算币种 = ? 参考币种"></label>
+        <label>汇率录入日期<input id="fxDate" type="date"></label>
+        <div class="full">
+          <div class="actions">
+            <button class="btn" type="button" onclick="TD.addItemRow()">＋ 添加产品行</button>
+            <button class="btn" type="button" onclick="TD.appendProductLine()">从产品库选择</button>
+          </div>
+          <div id="itemGrid" class="itemgrid"></div>
+          <datalist id="productList"></datalist>
+          <datalist id="unitList"></datalist>
+          <textarea id="items" hidden></textarea>
+          <div class="sub" id="itemsTotal">合计：0.00</div>
+        </div>
+        <details class="full advanced" id="termPriceBox">
+          <summary>按贸易术语逐项报价（默认收起；客户要 FOB / DDP / DAP 比价时展开）</summary>
+          <p class="sub"><b>本单所有贸易术语、逐项单价、地点、运费责任都只在这里录入一次。</b>一行一个产品、一列一个贸易术语：主术语那一列是基准价，不用填；其他列填该产品在该术语下的单价，留空表示按主价计入。<b>数量一律取上方产品行，整单总价由「数量 × 逐项单价」自动汇总</b>，没有第二个可以填数量的地方。表格下方可补每列的地点、运费责任与备注。<br>要 FOB 一份、DAP 一份独立报价单，请到「单证中心 → ⑤ 按贸易术语分别出报价单」；本页只是录入界面，一张正式发票 / 合同仍只有一个贸易术语。</p>
+          <div class="actions">
+            <select id="newTermSelect" aria-label="选择要新增的贸易术语"></select>
+            <button class="btn" type="button" onclick="TD.addTermPriceColumn()">＋ 添加术语方案</button>
+            <button class="btn" type="button" onclick="TD.fillTermPricesWithBase()">把主价填进空白格</button>
+          </div>
+          <div id="termPriceMatrix" class="termgrid-host"></div>
+          <div class="sub" id="termPriceTotals"></div>
+          <textarea id="priceOptions" hidden></textarea>
+        </details>
+        <label>折扣率 (%)<input id="discountPct" type="number" min="0" max="100" step="0.01"></label>
+        <label>税率 / VAT (%)<input id="vatPct" type="number" min="0" max="100" step="0.01"></label>
+        <p class="full sub">参考币种只用于给客户看折算价，<b>不改变应付金额</b>。合计由产品行自动算出，无需手填。</p>
+      </div>
+
+      <div class="formstep" data-step="3" hidden>
+        <h3 class="section-title">③ 交易条款与收款 — 怎么付款、怎么运、收哪个账户</h3>
+        <label>贸易术语<select id="incoterm"></select></label>
+        <label>术语地点 / 装运港（FOB、CIF、CFR 必填）<input id="incotermPlace" placeholder="如 Shanghai Port, China / Rotterdam, Netherlands"></label>
+        <label>付款方式（选预设即可）<select id="paymentPreset"></select></label>
+        <label>预付款比例 (%)<input id="depositPct" type="number" min="0" max="100" step="1"></label>
+        <label class="full">付款方式文字（按上面的比例自动生成，也可直接改）<input id="payment" placeholder="Payment terms"></label>
+        <p class="full sub">印度等高风险客户常用 <b>100% 全额预付</b>，也可选 80% / 50% / 30% 或直接改比例。选预设后，下方文字会自动同步，避免「比例 100%、文字却写 50% 定金」这类自相矛盾的单证。按手册 5.2，新客户不做无预付款订单，FFKM 等高价值产品须 100% 或至少 50% 预付。</p>
+        <label>交期（下拉选天数）<select id="leadPreset"></select></label>
+        <label>交期文字（可改）<input id="lead" placeholder="如 20-25 working days"></label>
+        <label>报价有效期（下拉选天数）<select id="validPreset"></select></label>
+        <label>有效期文字（可改）<input id="valid" placeholder="如 30 days"></label>
+        <label>装运方式（下拉或自定义）<select id="shipViaPreset"></select></label>
+        <label>装运方式文字（可改）<input id="shipVia" placeholder="SEA / AIR / Courier / FedEx"></label>
+        <label>装运港<input id="portLoad" placeholder="Port of Loading"></label>
+        <label>目的港 / 目的地<input id="portDest" placeholder="Port of Destination"></label>
+        <input type="hidden" id="entity" value="">
+        <div class="full" style="padding:8px 10px;border:1px solid var(--line,#d8dee8);border-radius:6px;background:var(--soft,#f7f9fc)">
+          <b>出单主体：<span id="contractEntityLabel">读取中…</span></b>
+          <div class="sub" style="margin-top:4px">固定用于报价、PI、合同、商业发票、装箱单、唛头及报关通关的抬头、地址、签字方；无需选择，也不会随收款账户改变。</div>
+        </div>
+        <label>收款账户<select id="account"></select></label>
+        <p class="full sub">收款账户只决定汇款资料里的户名 / 账号 / 银行，不改变任何单证的出单主体；户名与出单主体不同属正常收款安排。</p>
+        <div class="full" id="sellerWarnings"></div>
+        <div class="full"><label class="check"><input type="checkbox" id="showBank"> 在 PI / 合同 / CI 中显示完整收款账户资料</label>
+          <p class="sub">按《AI询盘处理工作手册 v1.2》5.3：仅在客户确认订单、进入正式付款环节后才可提供完整账户；Quotation 一律不显示。</p></div>
+        <details class="full advanced" id="priceOptionsBox">
+          <summary>报价方案核对（只读）· 模具费 · 合规说明（默认收起）</summary>
+          <p class="sub">下面是<b>第 ② 步「按贸易术语逐项报价」的只读核对</b>，属于本订单自己的数据，每单各自保存，不是每次导出临时生成的。术语、数量、单价、整单总价都来自第 ② 步的产品行，<b>这里不能改，也不会自己变</b>：要改价格或增删术语，请回第 ② 步。客户要 FOB 一份、DAP 一份分别外发时，到「单证中心 → ⑤ 按贸易术语分别出报价单」导出；合并报价单只用 Quotation 显示比价表，PI / 合同 / CI / PL 仍按主术语出单。</p>
+          <div class="full" id="priceOptionsReview"></div>
+          <label>模具 / 工装费 Mould or Tooling Cost<input id="toolingCost" type="number" min="0" step="0.01" placeholder="0.00（无则留空或填 0）"></label>
+          <label class="full">模具费说明<input id="toolingNote" placeholder="例：No new tooling required / 无需开模；如需开模请写明金额与归属"></label>
+          <label class="full">合规 / 认证说明（客户索要 REACH / RoHS 等认证时填写）<input id="complianceNote" placeholder="例：REACH / RoHS compliant; certificates available on request"></label>
+          <p class="sub">客户问「Any mould or tooling cost, if applicable」时，报价单会明确答复：填金额即列费用，留空或 0 则打印「No mould / tooling cost」。合规说明按你填写的原文打印，留空则不显示，系统不会替你编造认证。复制旧订单会清空术语方案、模具费与合规说明，避免把上一单的价格带到新单。</p>
+        </details>
+      </div>
+
+      <div class="formstep" data-step="4" hidden>
+        <h3 class="section-title">④ 装箱与唛头 — 发货阶段才需要，可以先跳过</h3>
+        <div class="full">
+          <div class="actions">
+            <button class="btn" type="button" onclick="TD.addCartonRow()">＋ 添加箱内产品</button>
+            <button class="btn" type="button" onclick="TD.autoBuildPacking()">按产品包装参数生成装箱草案</button>
+            <button class="btn" type="button" onclick="TD.showPackingReport()">核对装箱差异</button>
+          </div>
+          <div id="cartonGrid" class="itemgrid"></div>
+          <textarea id="cartons" hidden></textarea>
+          <div class="sub" id="cartonSummary">包装箱：0</div>
+          <p class="sub">相同箱号表示同一箱。毛重、箱规是整箱数据；同箱填写不同值会标为「待核对」。箱体积每箱只计一次，净重按产品行累加。<b>装箱数量必须与订单数量一致</b>才能对外发送 PL。</p>
+          <label class="check"><input type="checkbox" id="packingConfirmed"> 已核对实际箱数、毛净重与箱规（取消勾选则 PL 标记为草案）</label>
+        </div>
+        <label>收货人 Consignee（留空则默认买方）<input id="consignee" placeholder="仅当收货人不同于买方时填写，如目的港指定收货公司"></label>
+        <label>通知人 Notify Party（选填）<input id="notifyParty" placeholder="提单 / 到货通知用，留空则不显示"></label>
+        <label>信用证号 L/C No.<input id="lcNo" placeholder="仅 CI / PL 调用"></label>
+        <label>提单号 B/L No.<input id="blNo" placeholder="装箱单 · 运输信息"></label>
+        <label>集装箱号 Container No.<input id="containerNo" placeholder="如 20'GP / 40'HQ"></label>
+        <label>封条号 Seal No.<input id="sealNo" placeholder="Seal No."></label>
+        <label>PI 编号（可选覆盖）<input id="piNo" placeholder="留空按编号规则生成"></label>
+        <label>预计开船日 ETD<input id="etd" type="date"></label>
+        <label>船名 / 航次<input id="vessel" placeholder="Vessel / Voyage"></label>
+        <div class="full">
+          <div class="metric">本单证允许打印的参考编号</div>
+          <div class="checkgrid" id="printRefs">
+            <label class="check"><input type="checkbox" data-ref="invoiceNo" checked> 发票编号</label>
+            <label class="check"><input type="checkbox" data-ref="contractNo" checked> 合同编号</label>
+            <label class="check"><input type="checkbox" data-ref="po" checked> 客户 P/O</label>
+            <label class="check"><input type="checkbox" data-ref="piNo" checked> PI 编号</label>
+            <label class="check"><input type="checkbox" data-ref="quotationNo" checked> 报价单号</label>
+            <label class="check"><input type="checkbox" data-ref="lcNo" checked> L/C 信用证号</label>
+            <label class="check"><input type="checkbox" data-ref="blNo" checked> B/L 提单号</label>
+            <label class="check"><input type="checkbox" data-ref="containerNo" checked> 集装箱号</label>
+          </div>
+          <p class="sub">按业务环节分开存放：客户 P/O 属买方信息，L/C 属付款，B/L / 集装箱号属装箱单运输信息。单证只调用自己该显示的编号。</p>
+        </div>
+        <label class="full">主唛 Shipping Mark（每行一条）<textarea id="shippingMark" rows="3" placeholder="BUYER NAME / DESTINATION&#10;P/O No.: PO-2026-001&#10;C/NO. 1-UP"></textarea></label>
+        <label>侧唛 / 附加信息<input id="sideMark" placeholder="G.W. / N.W. / MEAS. / MADE IN CHINA"></label>
+        <label class="check"><input type="checkbox" id="markNone"> N/M（无唛头）</label>
+        <label>唛头备注<input id="markNote" placeholder="客户指定的特殊唛头说明"></label>
+        <label>装箱单模式<select id="packingMode"><option value="byCarton">按箱汇总模式（推荐）</option><option value="byPiece">逐件明细模式</option></select></label>
+        <label class="full">装箱单备注<textarea id="packingNote" rows="2" placeholder="All goods are new and in good condition. Packed in export standard cartons."></textarea></label>
+        <p class="full sub">默认勾选 N/M（无唛头），系统不会替客户编造唛头。勾选 N/M 时，装箱行里手填的唛头会统一显示为 N/M，避免自相矛盾。</p>
+      </div>
+
+      <div class="formstep" data-step="5" hidden>
+        <h3 class="section-title">⑤ 出单 — 选语言、选单证、导出</h3>
+        <p class="full sub">默认「简洁输出」按你实际归档的单证排版：发票一页英文、装箱单六列、唛头三行；不带条款堆砌、中文大写、印章占位圈与买方签字栏。已保存的旧订单不会自动改变排版。</p>
+        <label class="check full"><input type="checkbox" id="compact" checked> 简洁输出（推荐）</label>
+        <label>输出语言<select id="language"></select></label>
+        <label>单证配色<select id="theme"></select></label>
+        <label>订单阶段<select id="state"></select></label>
+        <label class="full">备注 / 附加条款<textarea id="notes" rows="2" placeholder="会显示在客户单证上，请勿填写内部成本或内部代号"></textarea></label>
+        <div class="full">
+          <div class="metric">从同一订单快照生成单证</div>
+          <div class="docs" id="docKinds"></div>
+          <p class="sub">五种单证共用同一份订单快照与同一套卖方资料，但<b>导出时一份单证就是一个文件</b>：到「单证中心」点对应卡片即可单独预览 / 打印 / 下载，不会连成一个多页 PDF。打印时只需勾选「背景图形」，页眉页脚已自动抑制。</p>
+        </div>
+        <details class="full advanced">
+          <summary>高级设置 · 显示项 / 条款 / 签字 / 编号（默认收起）</summary>
+          <div class="metric" style="margin-top:10px">报价单表格中显示项</div>
+          <div class="checkgrid">
+            <label class="check"><input type="checkbox" id="showProductImages"> 产品图片</label>
+            <label class="check"><input type="checkbox" id="showMOQ"> MOQ 起订量</label>
+            <label class="check"><input type="checkbox" id="showGW"> 总毛重 TOTAL GW</label>
+            <label class="check"><input type="checkbox" id="showNW"> 总净重 TOTAL NW</label>
+            <label class="check"><input type="checkbox" id="showVOL"> 总体积 TOTAL VOL</label>
+            <label class="check"><input type="checkbox" id="showHS" checked> CI 的 HS Code / 原产国</label>
+            <label class="check"><input type="checkbox" id="showSignature" checked> 签字盖章区</label>
+            <label class="check"><input type="checkbox" id="showStamp"> 印章占位圈</label>
+            <label class="check"><input type="checkbox" id="ciForPayment"> 商业发票用于收款（才显示账户）</label>
+          </div>
+          <p class="sub">清关用商业发票默认不含银行资料；账户只出现在 PI / 合同等收款单据。如需在 CI 上显示，须显式勾选此项。</p>
+          <label class="full">单证正文（出现在所有单证中）<textarea id="docBody" rows="2" placeholder="例：Prices are based on current material costs. Goods are inspected before shipment."></textarea></label>
+          <label class="full">条款与条件（每行一条，留空则简洁模式不输出）<textarea id="terms" rows="3" placeholder="All prices are subject to change without prior notice."></textarea></label>
+          <label>卖方签署文字<input id="sellerSignature" placeholder="Sales Manager, Authorized Signature"></label>
+          <label>买方确认文字<input id="buyerSignature" placeholder="Accepted By, Authorized Representative"></label>
+          <label>单证编号覆盖（可选）<input id="docNoOverride" placeholder="留空则按系统规则生成"></label>
+        </details>
+      </div>
+    </div>
+    <div class="modalfoot">
+
+      <div class="wizardnav" id="wizardNav">
+        <button class="btn" type="button" onclick="TD.stepBy(-1)" id="wizardPrev">← 上一步</button>
+        <span id="wizardPos">第 1 / 5 步</span>
+        <button class="btn" type="button" onclick="TD.stepBy(1)" id="wizardNext">下一步 →</button>
+      </div>
+      <button class="btn" onclick="TD.closeModal()">取消</button>
+      <button class="btn" onclick="TD.saveOrderOnly()">仅保存订单</button>
+      <button class="btn primary" onclick="TD.saveAndOpenStudio()">保存并打开单证中心（逐份导出）</button>
+      <button class="btn" onclick="TD.saveAndPrintBundle()">合并打印整套（内部存档用）</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalHost"></div>
+
+<script src="core.js"></script>
+<script src="i18n.js"></script>
+<script src="seller-info.js"></script>
+<script src="packing-calculations.js"></script>
+<script src="documents.js"></script>
+<script src="document-checks.js"></script>
+<script src="account-select.js"></script>
+<script src="order-form.js"></script>
+<script src="record-editor.js"></script>
+<script src="studio.js"></script>
+<script src="workspace.js"></script>
+<script src="brand.js"></script>
+<script>TD.boot();</script>
+</body>
+</html>
