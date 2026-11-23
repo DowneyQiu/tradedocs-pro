@@ -7,8 +7,12 @@
 ## 这个 Release 里应该放什么
 
 1. **源码**（GitHub 自动生成）：仓库根，含全部自研源码与文档，不含 `runtime/`。
-2. **`TradeDocsPro_开源分享版_v1.0_免安装.zip`**（手动上传为附件）：
+2. **`TradeDocsPro_Share_v1.0_Portable.zip`**（Release 附件，纯 ASCII 名便于下载）：
    含随包 Python 运行时，解压双击即可用，目标电脑无需装 Python。
+   分享者本地交付目录里的中文名 ZIP 是同一个文件，只是文件名不同；
+   GitHub 会把中文附件名规范化，因此线上统一用这个 ASCII 名。
+
+仓库地址：`https://github.com/DowneyQiu/tradedocs-pro`
 
 ## Release 正文可直接复制
 
@@ -26,14 +30,14 @@
 > 不会写代码也能用：下载下面那个免安装 ZIP，完整解压，双击 bat。
 > 有问题到 Issues 提，不提供付费技术支持。
 
-## 发布前复核
+## 发布时已复核（2026-11-23，全部通过）
 
-- [ ] ZIP 解压到全新目录可独立启动
-- [ ] 出厂库 0 条、`integrity_check: ok`
-- [ ] ZIP 内不含 `runtime.json` / 每日快照 / `-wal` / `-shm`
-- [ ] ZIP 内不含任何真实客户、订单号、账号、真实主体业务数据
-- [ ] 界面与文档无上一版的付费授权口径残留
-- [ ] 不要把本项目标成 `Open Source` 或挂 OSI 相关标签
+- [x] ZIP 解压到全新目录可独立启动
+- [x] 出厂库 0 条、`integrity_check: ok`
+- [x] ZIP 内不含 `runtime.json` / 每日快照 / `-wal` / `-shm`
+- [x] ZIP 内不含任何真实客户、订单号、账号、真实主体业务数据
+- [x] 界面与文档无上一版的付费授权口径残留
+- [x] 未把本项目标成 `Open Source`、未挂 OSI 相关标签
 
 ---
 
