@@ -141,4 +141,5 @@ TradeDocsPro/
 ---
 
 唐先生（Downey）· 拓珀新材料 Topo New Material
-© 2026 拓珀新材料（成都）有限公司 · 保留未授予的权利
+© 2026 唐先生（Downey）· 源码公开 · 保留未授予的权利
+权利主体见 LICENSE
