@@ -42,7 +42,7 @@
     // A payee name different from the contracting entity is a normal
     // collection arrangement, not an error. Only currency is checked below.
     if (list.includes('Proforma Invoice') && order.showBank && !account) {
-      errors.push('PI 已勾选显示收款账户，但未选择有效账户。');
+      errors.push('PI 已勾选显示收款账户，但本机尚未录入账户或本单未选中：请到左侧【收款账户】建档，并回订单第 ③ 步「收款账户」选中一个有效账户。');
     }
     if (order.showBank && account && account.currency !== 'CONTRACT CURRENCY' && account.currency !== order.currency) {
       errors.push('收款账户币种与订单结算币种不匹配。');

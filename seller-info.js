@@ -85,7 +85,8 @@
     const out = [];
     const account = TD.accountFor(order);
     if (!account) {
-      out.push('未选择收款账户；PI / 预付款发票 / 合同 将不显示银行资料。清关用商业发票默认不含账户。');
+      out.push('尚未录入或未选择收款账户：请到左侧【收款账户】按币种建档（账号 / 开户行 / SWIFT），再回订单第 ③ 步「收款账户」选中；PI / 预付款发票 / 合同 才会显示银行资料。');
+      out.push('披露规则：报价单、装箱单、箱唛一律不含账户；清关用商业发票默认不含账户（For customs clearance purpose only.），确需拿 CI 收款请在「⑤ 出单 → 高级设置」勾选「商业发票用于收款」。');
       return out;
     }
     // A collection account's payee name may legitimately differ from the
