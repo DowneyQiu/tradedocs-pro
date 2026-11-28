@@ -133,8 +133,13 @@
     }), { boxes: 0, qty: 0, gross: 0, net: 0, cbm: 0, pendingGross: 0, pendingCbm: 0 });
 
     // ------- per-model quantity reconciliation -------
+    // Tooling is a charge, not a physical item: never count it in the
+    // ordered-vs-packed reconciliation on a packing list.
+    const goodsLines = (lines || []).filter((l) =>
+      String(l.priceSource || '') !== 'tooling' &&
+      !/^mould\s*\/\s*tooling cost$/i.test(String(l.name || '').trim()));
     const modelMap = new Map();
-    for (const line of (lines || [])) {
+    for (const line of goodsLines) {
       const key = String(line.model || '').trim() || String(line.name || '').trim() || '未分类';
       const entry = modelMap.get(key) || { key, name: line.name || '', model: line.model || '', ordered: 0, packed: 0 };
       entry.ordered += TD.num(line.qty);

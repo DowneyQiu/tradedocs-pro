@@ -783,6 +783,36 @@
       line.total = Math.round(line.qty * line.price * 10000) / 10000;
       return line;
     });
+    // ---- tooling cost is a real charge, not a footnote -------------------
+    // Saving an order turns step-3's tooling amount into the LAST item line.
+    // That one source of truth feeds Total Amount, amount in words, PI
+    // advance, contract value and CI, so the buyer never sees two totals.
+    // Re-saving is idempotent: drop the previously generated line first.
+    const toolingCost = TD.num(TD.val('toolingCost'));
+    const toolingNote = String(TD.val('toolingNote') || '').trim();
+    const isToolingName = (line) =>
+      /^mould\s*\/\s*tooling cost$/i.test(String(line.name || '').trim());
+    const goods = lines.filter((line) => String(line.priceSource || '') !== 'tooling');
+    if (toolingCost > 0) {
+      const blank = Object.fromEntries(TD.LINE_FIELDS.map((f) => [f, '']));
+      const toolingLine = Object.assign(blank, {
+        name: 'Mould / Tooling Cost',
+        model: '',
+        qty: 1,
+        unit: 'SET',
+        price: toolingCost,
+        total: Math.round(toolingCost * 10000) / 10000,
+        docDescription: toolingNote ||
+          'One-off tooling charge, already included in the total above; not charged again on repeat orders of the same size.',
+        priceSource: 'tooling',
+      });
+      const existing = goods.findIndex(isToolingName);
+      if (existing >= 0) {
+        const prior = goods[existing].docDescription;
+        goods[existing] = Object.assign(goods[existing], toolingLine);
+        if (!toolingNote && prior) goods[existing].docDescription = prior;
+      } else goods.push(toolingLine);
+    }
     const overlay = document.getElementById('overlay');
     const extra = {};
     for (const f of TD.EXTRA_ORDER_FIELDS) extra[f] = TD.val(f);
@@ -819,9 +849,9 @@
       cartons: String(document.getElementById('cartons').value || ''),
       notes: TD.val('notes'), state: TD.val('state'),
       priceOptions: TD.readPriceOptions(),
-      toolingCost: TD.num(TD.val('toolingCost')),
-      toolingNote: TD.val('toolingNote'),
-      lines, total: Math.round(lines.reduce((s, l) => s + l.total, 0) * 10000) / 10000,
+      toolingCost: toolingCost,
+      toolingNote: toolingNote,
+      lines: goods, total: Math.round(goods.reduce((s, l) => s + l.total, 0) * 10000) / 10000,
     }, extra);
   };
 
@@ -956,6 +986,13 @@
     TD.loadPriceOptions('[]');
     TD.setVal('toolingCost', '');
     TD.setVal('toolingNote', '');
+    // A tooling charge belongs to the original order. fillForm() already
+    // loaded its generated item line, so drop that line too; otherwise the
+    // copy would still bill the previous order's mould.
+    TD.loadItemGrid((order.lines || []).filter((l) =>
+      String(l.priceSource || '') !== 'tooling' &&
+      !/^mould\s*\/\s*tooling cost$/i.test(String(l.name || '').trim()))
+      .map(TD.serializeOrderLine).join('\n'));
     TD.setVal('complianceNote', '');
     // Shipment-stage parties are order-specific; never carry them over.
     TD.setVal('consignee', '');
@@ -1114,7 +1151,7 @@
   TD.STEP_GUIDES = {
     1: '第 1 步 / 共 5 步 · 客户与报价：填客户公司和编号即可，从客户档案选择会自动带出地址与专属价。',
     2: '第 2 步 · 产品与金额：用「从产品库选择」快速带入产品行，合计自动计算；客户要比价时展开「按贸易术语逐项报价」，一列一个术语填单价，数量与总价都由产品行自动汇总。参考币种只给客户看折算价。',
-    3: '第 3 步 · 交易条款与收款：付款比例用下拉选（印度客户可选 100% 全额预付），系统自动生成一致的付款文字；交期、有效期、装运方式都可选天数或自定义。术语报价在这里只核对、不重复录入；模具费与合规认证说明在此填。出单主体已固定为成都公司，这里只需选收款账户。',
+    3: '第 3 步 · 交易条款与收款：付款比例用下拉选（印度客户可选 100% 全额预付），系统自动生成一致的付款文字；交期、有效期、装运方式都可选天数或自定义。术语报价在这里只核对、不重复录入；模具费在此填金额，保存后自动并入商品明细表与总额，合规认证说明亦在此填。出单主体在左侧【出单主体】页统一维护，这里只需选收款账户。',
     4: '第 4 步 · 装箱与唛头（可跳过）：准备发货时才需要填，装箱数量必须与订单数量一致。默认 N/M 无唛头，系统不会替客户编造唛头。',
     5: '第 5 步 · 单证样式与出单：选语言、配色、显示项，然后点「保存并打开单证中心」。那里每种单证是一张卡片，想打印哪份就点哪份，各自一个独立文件；合并打印整套只用于自己留档。'
   };

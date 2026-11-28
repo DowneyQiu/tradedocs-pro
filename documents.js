@@ -580,6 +580,12 @@
   function toolingHtml(order, force) {
     const cost = TD.num(order && order.toolingCost);
     const note = String((order && order.toolingNote) || '').trim();
+    // The tooling charge is now an item line and part of Total Amount.
+    // Never print the same money a second time under Quotation Notes.
+    const inItemTable = ((order && order.lines) || []).some((l) =>
+      String(l.priceSource || '') === 'tooling' ||
+      /^mould\s*\/\s*tooling cost$/i.test(String(l.name || '').trim()));
+    if (cost > 0 && inItemTable) return '';
     if (!force && !(cost > 0) && !note) return '';
     return '<div class="tooling"><b>Mould / Tooling Cost:</b> ' +
       (cost > 0 ? E((order && order.currency) || '') + ' ' + E(TD.money(cost))

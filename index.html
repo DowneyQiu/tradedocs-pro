@@ -212,10 +212,10 @@
           <summary>报价方案核对（只读）· 模具费 · 合规说明（默认收起）</summary>
           <p class="sub">下面是<b>第 ② 步「按贸易术语逐项报价」的只读核对</b>，属于本订单自己的数据，每单各自保存，不是每次导出临时生成的。术语、数量、单价、整单总价都来自第 ② 步的产品行，<b>这里不能改，也不会自己变</b>：要改价格或增删术语，请回第 ② 步。客户要 FOB 一份、DAP 一份分别外发时，到「单证中心 → ⑤ 按贸易术语分别出报价单」导出；合并报价单只用 Quotation 显示比价表，PI / 合同 / CI / PL 仍按主术语出单。</p>
           <div class="full" id="priceOptionsReview"></div>
-          <label>模具 / 工装费 Mould or Tooling Cost<input id="toolingCost" type="number" min="0" step="0.01" placeholder="0.00（无则留空或填 0）"></label>
-          <label class="full">模具费说明<input id="toolingNote" placeholder="例：No new tooling required / 无需开模；如需开模请写明金额与归属"></label>
+          <label>模具 / 工装费 Mould or Tooling Cost（按订单币种填写，不是人民币）<input id="toolingCost" type="number" min="0" step="0.01" placeholder="0.00（无则留空或填 0）"></label>
+          <label class="full">模具费说明<input id="toolingNote" placeholder="例：One-off tooling cost for size 72.75 x 1.78, included in the total; not charged again on repeat orders"></label>
           <label class="full">合规 / 认证说明（客户索要 REACH / RoHS 等认证时填写）<input id="complianceNote" placeholder="例：REACH / RoHS compliant; certificates available on request"></label>
-          <p class="sub">客户问「Any mould or tooling cost, if applicable」时，报价单会明确答复：填金额即列费用，留空或 0 则打印「No mould / tooling cost」。合规说明按你填写的原文打印，留空则不显示，系统不会替你编造认证。复制旧订单会清空术语方案、模具费与合规说明，避免把上一单的价格带到新单。</p>
+          <p class="sub">填了模具费金额并点「保存订单」后，系统会自动把它作为<b>商品明细表最后一行</b>加入，并计入 Total Amount、大写金额、PI 预付款与合同金额；报价说明下方<b>不会再重复列一次</b>。要改金额或说明请回到这里改，明细表那一行会按本步骤的值自动重建。没有模具费就留空或填 0，单证上不打印任何模具费字样（多术语报价仍会明确答复「No mould / tooling cost」）。合规说明按你填写的原文打印，留空则不显示，系统不会替你编造认证。复制旧订单会清空术语方案、模具费与合规说明，并去掉上一单的模具费明细行，避免把上一单的价格带到新单。</p>
         </details>
       </div>
 

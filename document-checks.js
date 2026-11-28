@@ -96,6 +96,16 @@
 
     // ---- multi-term quotation (Quotation only) ----
     if (list.includes('Quotation')) {
+      // Defensive guard: a tooling amount that never made it into the item
+      // table would produce a quotation with two contradictory totals.
+      const toolingAmount = TD.num(order.toolingCost);
+      const toolingMerged = lines.some((l) =>
+        String(l.priceSource || '') === 'tooling' ||
+        /^mould\s*\/\s*tooling cost$/i.test(String(l.name || '').trim()));
+      if (toolingAmount > 0 && !toolingMerged) {
+        errors.push('第 ③ 步已填写模具费 ' + toolingAmount +
+          '，但商品明细表里还没有模具费行；请打开订单点一次「保存订单」再导出，否则总额不会包含这笔费用。');
+      }
       const opts = TD.priceOptions(order);
       if (opts.length > 1) {
         if (!opts.some((o) => o.incoterm === order.incoterm)) {
